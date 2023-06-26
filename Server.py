@@ -3,18 +3,19 @@ import select
 import json
 import sys
 import numpy as np
+import shutil
 
-def calculate_average(arrays):
-    total_sum = 0
-    total_elements = 0
-    for array in arrays:
-        for element in array:
-            total_sum += element
-            total_elements += 1
-    if total_elements > 0:
-        return total_sum / total_elements
-    else:
-        return 0
+terminal_width = shutil.get_terminal_size().columns
+line = '*' * terminal_width
+
+def create_3x3_array():
+    array_3x3 = []
+    for _ in range(3):
+        row = []
+        for _ in range(3):
+            row.append(0)
+        array_3x3.append(row)
+    return array_3x3
 
 def main():
     print("Server Started.")
@@ -70,27 +71,21 @@ def main():
     
     print("All clients connected. Listening for messages...")
 
-    array_3x3 = []
-    for _ in range(3):
-        row = []
-        for _ in range(3):
-            row.append(0)
-        array_3x3.append(row)
+    # create the initial 3x3 array
+    array_3x3 = create_3x3_array()
 
+    print("\n"+line+"\n")
+    print("Total number of iterations to do: "+str(num_of_iterations))
+    print("Total number of clients: "+str(num_clients))
+    print("\n"+line+"\n")
 
-    # print(array_3x3)
-
+    # counters for clients and iterations
     client_count = 0
     iterations_count = 0
 
 
     try: 
         while True:
-            if iterations_count == num_of_iterations:
-                print("Iterations number met. Exciting system")
-                sys.exit()
-
-
             readable_sockets, _, _ = select.select(sockets_list, [], [])
 
             # Iterate over the sockets that are ready to be read
@@ -113,35 +108,37 @@ def main():
                         sys.exit()
                     
                     else:
+                        print("3x3 Array received from client: "+str(client_count)+". Iteration: "+str(iterations_count))
                         client_count += 1
                         receive_data = data.decode()
                         array_list = json.loads(receive_data)
 
                         # Print each array from the list
-                        for array in array_list:
-                            print(array)
+                        print(array_list)
+                        # for array in array_list:
+                        #     print(array)
                         
                         for i in range(len(array_list)):
                             for j in range(len(array_list[i])):
                                 array_3x3[i][j] += array_list[i][j]
                         
-                        # print(array_3x3)
                         print(" ")
 
                         if (client_count < num_clients):
                             continue
                         else:
-                            
-                            client_count = 0
-                            iterations_count += 1
 
                             for i in range(len(array_3x3)):
                                 for j in range(len(array_3x3)):
                                     array_3x3[i][j] /= num_clients
                                     array_3x3[i][j] = round(array_3x3[i][j], 1)
                             
+                            print("Avg 3x3 array, iteration: "+str(iterations_count))
                             print(array_3x3)
-                            print(" ")
+                            print("\n"+line+"\n")
+
+                            client_count = 0
+                            iterations_count += 1
 
                             # Convert the list of arrays to a JSON string
                             array_json = json.dumps(array_3x3)
@@ -151,6 +148,14 @@ def main():
                             # Send the JSON string of 3x3 array to each client
                             for clientSocket in connected_clients:
                                 clientSocket.sendall(array_list_json.encode())
+
+                            # refresh the 3x3 array
+                            array_3x3 = create_3x3_array()
+                            
+                            # check if done correct num of iterations
+                            if iterations_count == num_of_iterations:
+                                print("Iterations number met. Exciting system")
+                                sys.exit()
 
     
     except KeyboardInterrupt:

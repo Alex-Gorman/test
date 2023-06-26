@@ -4,17 +4,12 @@ import random
 import numpy as np
 import sys
 import json
+import shutil
 
-def multiply_the_arrays(array_list, multiplier):
-    for i in range(len(array_list)):
-        for j in range(len(array_list[i])):
-            array_list[i][j] = array_list[i][j] + multiplier
-    
-    return array_list
-
+terminal_width = shutil.get_terminal_size().columns
+line = '*' * terminal_width
 
 def main():
-
     # Create TCP socket
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -45,15 +40,11 @@ def main():
     # set the print options to remove the delimiter space
     np.set_printoptions(formatter={'int': lambda x: f'{x}'})
 
-    # print the numpy arrays to console
-    for array in array_list:
-        print(array)
-
-
+    num_of_iterations = 0
+    
     try:
         # Infinite loop
         while True:
-
             # Sleep for a random amount of time
             time.sleep(random.randint(1, 10))
 
@@ -64,11 +55,16 @@ def main():
             client_socket.sendall(array_list_json.encode())
 
             # Receive the response from the server
-            try: 
+            try:
+                print("\n"+line+"\n") 
                 data = client_socket.recv(1024)
                 if not data:
                     print("Connection error with Server detected. Exciting program. ")
                     sys.exit()
+                
+                # print the sent data to server
+                print("Iteration: "+str(num_of_iterations))
+                print(str(array_list)+"\n")
 
                 # Split the received data into individual JSON objects
                 received_data = data.decode()
@@ -77,7 +73,8 @@ def main():
                 for json_obj in json_objects:
                     if json_obj:
                         # Print the response from the server
-                        print(f'Received from server: {json_obj}')
+                        print(f'Iteration: {num_of_iterations}. Average received from Server. \n{json_obj}')
+                        num_of_iterations += 1
 
                         # Get the 3x3 array list from the server
                         array_list = json.loads(json_obj)
@@ -99,8 +96,6 @@ def main():
     except KeyboardInterrupt:
         print("Keyboard interrupt detected. Exciting Program.")
         sys.exit()
-
-
 
 
 if __name__ == '__main__':
