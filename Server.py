@@ -46,9 +46,6 @@ def main():
 
     print("Server listening for incoming connections...")
 
-    # average over the arrays to be used as a multiplier
-    average = 1
-
     # keep track of connected clients
     connected_clients = []
 

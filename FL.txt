@@ -1,0 +1,10 @@
+- start from 1 for round, and 
+- round for instead of iteration
+-
+
+- tensor arrays
+- tensor arrays to JSON and back
+- install tensorflow library
+- create array using tensorflow
+- run program using tensorflow
+- modify arrays using tensorflow
